@@ -1,0 +1,57 @@
+name: Trigger RabbitMQ Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster:
+        description: "Target cluster"
+        required: true
+        type: choice
+        options:
+          - non-prod
+          - production
+
+      namespace:
+        description: "Target namespace"
+        required: true
+        type: string
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate namespace
+        run: |
+          CLUSTER="${{ github.event.inputs.cluster }}"
+          NS="${{ github.event.inputs.namespace }}"
+
+          if [[ "$CLUSTER" == "non-prod" ]]; then
+            ALLOWED="uat qa staging"
+          else
+            ALLOWED="production"
+          fi
+
+          if [[ ! " $ALLOWED " =~ " $NS " ]]; then
+            echo "❌ Invalid namespace '$NS' for cluster '$CLUSTER'"
+            exit 1
+          fi
+
+          echo "DEPLOY_NAMESPACE=$NS" >> $GITHUB_ENV
+
+      - name: Trigger deploy job in Repo-B
+        env:
+          GH_TOKEN: ${{ secrets.REPO_DISPATCH_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token $GH_TOKEN" \
+            https://api.github.com/repos/Bhaskara212/Dummy-for-testing/dispatches \
+            -d '{
+              "event_type": "deploy-rabbitmq",
+              "client_payload": {
+                "cluster": "${{ github.event.inputs.cluster }}",
+                "namespace": "${{ env.DEPLOY_NAMESPACE }}"
+              }
+            }'
+
