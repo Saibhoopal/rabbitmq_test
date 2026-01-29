@@ -69,7 +69,7 @@ jobs:
             -d '{
               "event_type": "deploy-rabbitmq",
               "client_payload": {
-                "cluster": "production",  #"${{ github.event.inputs.cluster }}",
+                "cluster": "production",
                 "namespace": "${{ env.DEPLOY_NAMESPACE }}"
               }
             }'
