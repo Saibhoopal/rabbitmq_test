@@ -1,4 +1,4 @@
-name: Trigger RabbitMQ Deployment
+name: deploy to system-tools cluster
 
 on:
   workflow_dispatch:
