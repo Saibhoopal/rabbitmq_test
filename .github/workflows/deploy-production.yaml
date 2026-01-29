@@ -1,0 +1,80 @@
+name: Trigger RabbitMQ Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      # cluster:
+      #   description: "Target cluster"
+      #   required: true
+      #   type: choice
+      #   options:
+      #     - non-prod
+      #     - production
+
+      namespace:
+        description: "Target namespace"
+        required: true
+        type: choice
+        options:
+          - prod1
+          - prod2
+          - fayaz-prod
+
+
+      # namespace:
+      #   description: "Target namespace"
+      #   required: true
+      #   type: string
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate namespace
+        run: |
+          CLUSTER="production"
+          #"${{ github.event.inputs.cluster }}"
+          NS="${{ github.event.inputs.namespace }}"
+
+          # if [[ "$CLUSTER" == "non-prod" ]]; then
+          #   ALLOWED="uat qa staging"
+          # else
+          #   ALLOWED="production"
+          # fi
+
+          # if [[ ! " $ALLOWED " =~ " $NS " ]]; then
+          #   echo "❌ Invalid namespace '$NS' for cluster '$CLUSTER'"
+          #   exit 1
+          # fi
+
+          echo "DEPLOY_NAMESPACE=$NS" >> $GITHUB_ENV
+
+      - name: Checkout ArgoCD repo
+        uses: actions/checkout@v4
+        with:
+          repository: Saibhoopal/argocd-server
+          token: ${{ secrets.ARGO_REPO_TOKEN }}
+          path: argocd-server
+
+
+      - name: Trigger deploy job in Repo-B
+        env:
+          ARGO_REPO_TOKEN: ${{ secrets.ARGO_REPO_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $ARGO_REPO_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/Saibhoopal/argocd-server/dispatches \
+            -d '{
+              "event_type": "deploy-rabbitmq",
+              "client_payload": {
+                "cluster": "${{ github.event.inputs.cluster }}",
+                "namespace": "${{ env.DEPLOY_NAMESPACE }}"
+              }
+            }'
+###################
+          # curl -X POST \
+          #   -H "Accept: application/vnd.github+json" \
+          #   -H "Authorization: token $GH_TOKEN" \
+          #   https://api.github.com/repos/Bhaskara212/Dummy-for-testing/dispatches \

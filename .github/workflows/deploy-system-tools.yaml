@@ -3,24 +3,22 @@ name: Trigger RabbitMQ Deployment
 on:
   workflow_dispatch:
     inputs:
-      cluster:
-        description: "Target cluster"
-        required: true
-        type: choice
-        options:
-          - non-prod
-          - production
+      # cluster:
+      #   description: "Target cluster"
+      #   required: true
+      #   type: choice
+      #   options:
+      #     - non-prod
+      #     - production
 
       namespace:
         description: "Target namespace"
         required: true
         type: choice
         options:
-          - qa
-          - qa2
-          - fayaz-test
-          - staging
-          - uat
+          - systl1
+          - systl2
+          - fayaz-systl
 
       # namespace:
       #   description: "Target namespace"
@@ -34,19 +32,20 @@ jobs:
     steps:
       - name: Validate namespace
         run: |
-          CLUSTER="${{ github.event.inputs.cluster }}"
+          CLUSTER="system-tools"
+          #"${{ github.event.inputs.cluster }}"
           NS="${{ github.event.inputs.namespace }}"
 
-          if [[ "$CLUSTER" == "non-prod" ]]; then
-            ALLOWED="uat qa staging"
-          else
-            ALLOWED="production"
-          fi
+          # if [[ "$CLUSTER" == "non-prod" ]]; then
+          #   ALLOWED="uat qa staging"
+          # else
+          #   ALLOWED="production"
+          # fi
 
-          if [[ ! " $ALLOWED " =~ " $NS " ]]; then
-            echo "❌ Invalid namespace '$NS' for cluster '$CLUSTER'"
-            exit 1
-          fi
+          # if [[ ! " $ALLOWED " =~ " $NS " ]]; then
+          #   echo "❌ Invalid namespace '$NS' for cluster '$CLUSTER'"
+          #   exit 1
+          # fi
 
           echo "DEPLOY_NAMESPACE=$NS" >> $GITHUB_ENV
 
