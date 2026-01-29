@@ -1,4 +1,4 @@
-name: Trigger RabbitMQ Deployment
+name: deploy to non-prod cluster
 
 on:
   workflow_dispatch:
