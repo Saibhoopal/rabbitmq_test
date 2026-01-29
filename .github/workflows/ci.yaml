@@ -14,7 +14,18 @@ on:
       namespace:
         description: "Target namespace"
         required: true
-        type: string
+        type: choice
+        options:
+          - qa
+          - qa2
+          - fayaz-test
+          - staging
+          - uat
+
+      # namespace:
+      #   description: "Target namespace"
+      #   required: true
+      #   type: string
 
 jobs:
   trigger:
